@@ -1,0 +1,72 @@
+## Import Package
+from selenium import webdriver
+import pandas as pd
+import numpy as np
+import requests
+from bs4 import BeautifulSoup
+from bs4 import NavigableString, Tag
+
+
+## Enabled Chrome function 打開模擬瀏覽器
+chrome_browser = webdriver.Chrome()
+## go to the website
+chrome_browser.get("https://www.chinalife.com.tw/wps/portal/chinalife/product-overview/interest/declare-interest")
+## Close down the website
+# chrome_browser.close()
+
+
+
+## 瀏覽器名稱
+print(chrome_browser.name) 
+## 網頁標題
+print(chrome_browser.title)
+## URL位置
+print(chrome_browser.current_url)
+## 連線Browser Id
+print(chrome_browser.session_id)
+# ## 目標網頁原始碼
+# print(chrome_browser.page_source)
+# ## 瀏覽器功能設定選項
+# print(chrome_browser.capabilities)
+
+
+prod_name = chrome_browser.find_elements_by_class_name("text-left")
+name_list = [x.text for x in prod_name]
+df = pd.DataFrame({"name":name_list})
+
+df.drop(df.loc[df["name"]==""].index, inplace=True)
+
+
+
+page = chrome_browser.page_source
+page_soup = BeautifulSoup(page,'html.parser')
+
+containers = page_soup.findAll("tbody" , {"id":"tableResult"})
+print(containers)
+print(len(containers))
+
+
+
+
+page = chrome_browser.page_source
+page_soup = BeautifulSoup(page,'html.parser')
+name_list = []
+body = page_soup.tbody
+containers1 = body.findAll("tr")
+containers2 = containers1[0].findAll("td")
+for i in containers1 :
+     aa = i.findAll("td")
+     for q in aa :
+          name_list.append(q.text)
+          
+          
+          
+name_list_rs = [name_list[i:i+4] for i in range(0, len(name_list), 4)]
+name_list_rs
+
+
+
+df = pd.DataFrame(name_list_rs, columns =["商品名稱", "宣告利率", "保單借款利率", "特定加值利率"])
+df.dropna(subset=["宣告利率", "保單借款利率", "特定加值利率"], inplace = True)
+df
+
